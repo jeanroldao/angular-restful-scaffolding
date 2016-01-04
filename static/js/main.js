@@ -10,7 +10,7 @@
       schema: {
         type: "object",
         properties: {
-          _id: { type: "string", minLength: 24, title: "Identifier", description: "empty for new" },
+          _id: { type: "string", minLength: 24, title: "Identifier", description: "empty means new" },
           name: { 
             type: "string",
             minLength: 1, 
@@ -34,19 +34,14 @@
       schema: {
         type: "object",
         properties: {
-          _id: { type: "string", minLength: 24, title: "Identifier", description: "Identifier (empty for new)" },
+          _id: { type: "string", minLength: 24, title: "Identifier", description: "empty means new" },
           name: { type: "string", minLength: 2, title: "Name", description: "Name or alias" },
-          //organization: { type: "string", minLength: 24, title: "Organization", description: "Identifier of Organization" },
           organization: { 
             type: "string", 
             title: "Organization", 
             description: "Identifier of Organization",
             select: { fromResource: '/organizations', value: '_id', name: 'name' }
-          },
-          /*title: {
-            type: "string",
-            enum: ['dr','jr','sir','mrs','mr','NaN','dj']
-          }*/
+          }
         },
         required: ['name']
       },
@@ -83,7 +78,7 @@
     });
   });
   
-  app.controller('indexController', function(Models, $location, $resource, $timeout) {
+  app.controller('indexController', function(Models, $location, $route, $resource, $timeout) {
     var index = this;
     
     index.currentModelValue = null;
@@ -92,7 +87,6 @@
     
     index.data = [];
     index.uiGrid = { 
-      //enableGridMenu: true,
       enableFiltering: true,
       modifierKeysToMultiSelectCells: true,
       showGridFooter: true,
@@ -119,20 +113,17 @@
           form.push(s);
         } 
       });
-      //console.log(model.form);
-      //console.log(form);
       model.form = form;
       
       index.models[model.path] = model;
     });
         
     function loadSelectsForModel(model) {
+    
       // replace select items for titleMaps from ng resource
       for (var key in model.schema.properties) {
         var p = model.schema.properties[key];
-        //console.log(p);
         
-        //select: { fromResource: '/organizations', value: '_id', name: 'name' }
         if (p.select) {
           var titleMap = index.models[p.select.fromResource].ngResource.query(function(items) {
             items.forEach(function(item, i) {
@@ -238,6 +229,7 @@
             });
           }
         }
+        $route.reload();
       });
     };
     index.init();
