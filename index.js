@@ -68,6 +68,12 @@ api.get('/employee/organization/:id', wagner.invoke(function(Employee) {
   };
 }));
 
+api.put('/employee/:id', wagner.invoke(function(Employee) {
+  return function(req, res) {
+    Employee.findByIdAndUpdate(req.params.id, { $set: req.body }, { 'new': true, runValidators: true }, utils.handleOne(res));
+  };
+}));
+
 api.delete('/employee/:id', wagner.invoke(function(Employee) {
   return function(req, res) {
     Employee.remove({ _id: req.params.id }, utils.handleOne(res));
