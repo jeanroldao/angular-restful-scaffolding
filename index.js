@@ -16,7 +16,9 @@ api.use(bodyparser.json());
 
 api.get('/organization', wagner.invoke(function(Organization) {
   return function(req, res) {
+    //setTimeout(function(){
     Organization.find({}, utils.handleMany(res));
+    //}, 500);
   };
 }));
 
