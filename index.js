@@ -5,8 +5,6 @@ require('./models')(wagner);
 
 var app = express();
 
-app.use(express.static('static'));
-
 var utils = require('./utils');
 var bodyparser = require('body-parser');
 
@@ -83,6 +81,11 @@ api.delete('/employee/:id', wagner.invoke(function(Employee) {
 }));
 
 app.use('/api/v1', api);
+
+
+app.use(express.static('static'));
+
+app.disable('etag');
 
 app.listen(3000);
 console.log('Server listening on port 3000');

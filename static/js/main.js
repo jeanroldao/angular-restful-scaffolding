@@ -4,7 +4,7 @@
   
   app.constant('Models', [
     {
-      path: '/organizations',
+      path: '/organization',
       resourceUrl: '/api/v1/organization/:_id',
       title: 'Organizations',
       schema: {
@@ -33,7 +33,7 @@
       ]
     },
     {
-      path: '/employees',
+      path: '/employee',
       resourceUrl: '/api/v1/employee/:_id',
       title: 'Employees',
       schema: {
@@ -55,7 +55,7 @@
             type: "string", 
             title: "Organization", 
             description: "Identifier of Organization",
-            select: { fromResource: '/organizations', value: '_id', name: 'name' }
+            select: { fromResource: '/organization', value: '_id', name: 'name' }
           }
         },
         required: ['name']
