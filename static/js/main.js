@@ -85,7 +85,8 @@
           + '<form ng-if="index.getCurrentModelValue()" ng-submit="index.save()" sf-schema="index.models[\''+model.path+'\'].schema" sf-form="index.models[\''+model.path+'\'].form" sf-model="index.currentModelValue"></form>'
           + '<div ng-if="!index.getCurrentModelValue()" class="btn-toolbar">'
           + '<button type="button" class="btn btn-success" ng-click="index.create()">New</button>'
-          + '<button ng-if="index.canEdit()" type="button" class="btn btn-prmary" ng-click="index.edit()">Edit</button><br><br>'
+          + '<button ng-if="index.canEdit()" type="button" class="btn btn-prmary" ng-click="index.edit()">Edit</button>'
+          + '<button ng-if="index.canEdit()" type="button" class="btn btn-prmary" ng-click="index.remove()">Delete</button><br><br>'
           + '<div ui-grid="index.uiGrid" ui-grid-selection class="myGrid"></div>' 
           + '</div>';
           
@@ -137,6 +138,13 @@
       var idField = getCurrentModel().idField;
       var id = index.selectedRow.entity[idField];
       index.path(index.path() + '/' + id);
+    };
+    
+    index.remove = function() {
+      index.selectedRow.entity.$remove(function() {
+        index.path(index.path()); 
+        index.init();
+      });
     };
     
     index.canEdit = function() {
@@ -254,6 +262,7 @@
     
     index.init = function() {
       index.currentModelValue = null;
+      index.selectedRow = null;
       
       index.data = [];
       //index.uiGrid = { enableFiltering: true, data: index.data };
