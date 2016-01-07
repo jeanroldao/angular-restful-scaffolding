@@ -27,8 +27,11 @@
       form: [
         "*",
         {
-          type: "submit",
-          title: "Save"
+          type: "actions",
+          items: [
+            { type: 'submit', style: 'btn-success', title: 'Save' },
+            { type: 'button', title: 'Cancel', onClick: "index.cancel()" }
+          ]
         }
       ]
     },
@@ -63,8 +66,11 @@
       form: [
         "*",
         {
-          type: "submit",
-          title: "Save"
+          type: "actions",
+          items: [
+            { type: 'submit', style: 'btn-success', title: 'Save' },
+            { type: 'button', title: 'Cancel', onClick: "index.cancel()" }
+          ]
         }
       ]
     }
@@ -97,7 +103,7 @@
         template: template,
         resolve: {
           id: function($routeParams) {
-            console.log($routeParams.id);
+            //console.log($routeParams.id);
           }
         }
       });
@@ -119,7 +125,7 @@
           var model = getCurrentModel();
           var filter = {};
           filter[model.idField] = $routeParams.id;
-          index.currentModelValue = model.ngResource.get(filter, function() {}, function(res){
+          index.currentModelValue = model.NgResource.get(filter, function() {}, function(res){
             // redirect on any error, like not found and internal server error
             index.path(index.path());
           });
@@ -145,6 +151,11 @@
         index.path(index.path()); 
         index.init();
       });
+    };
+    
+    index.cancel = function() {
+      index.path(index.path()); 
+      index.init();
     };
     
     index.canEdit = function() {
@@ -176,7 +187,7 @@
       var idMapping = {};
       idMapping[model.idField] = '@' + model.idField;
       
-      model.ngResource = $resource( model.resourceUrl, idMapping, { 'update': { method:'PUT' }});
+      model.NgResource = $resource( model.resourceUrl, idMapping, { 'update': { method:'PUT' }});
       
       var form = [];
       model.form.forEach(function(s){ 
@@ -198,7 +209,7 @@
         var p = model.schema.properties[key];
         
         if (p.select) {
-          var titleMap = index.models[p.select.fromResource].ngResource.query(function(items) {
+          var titleMap = index.models[p.select.fromResource].NgResource.query(function(items) {
             items.forEach(function(item, i) {
               items[i] = {
                 value: item[p.select.value],
@@ -227,16 +238,15 @@
       var valid = true;
       if (model && model.schema.required) {
         model.schema.required.forEach(function(requiredField) {
-          valid &= !!index.currentModelValue[requiredField];
+          valid = valid && !!index.currentModelValue[requiredField];
         });
       }
       if (!valid) {
         console.log('Invalid!');
       } else {
         console.log('Saving');
-        //console.log(index.currentModelValue);
         var model = getCurrentModel();
-        var value = new model.ngResource(index.currentModelValue)
+        var value = new model.NgResource(index.currentModelValue);
         if (index.currentModelValue[model.idField]) {
           value.$update(function() {
             index.path(index.path());
@@ -265,20 +275,17 @@
       index.selectedRow = null;
       
       index.data = [];
-      //index.uiGrid = { enableFiltering: true, data: index.data };
       index.uiGrid.data = index.data;
       
       $timeout(function() {
         var model = getCurrentModel();
         if (model) {
           loadSelectsForModel(model);
-          index.data = model.ngResource.query(function(list) {
+          index.data = model.NgResource.query(function(list) {
           
             var formFieldsIdToValues = {};
             model.form.forEach(function(field) {
-              console.log('field.titleMap');
-              console.log(field.key);
-              console.log(field.titleMap);
+
               if (field.titleMap) {
                 if (Array.isArray(field.titleMap)) {
                   formFieldsIdToValues[field.key] = {};
