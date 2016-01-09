@@ -13,7 +13,7 @@
           _id: { 
             type: "string", 
             minLength: 24, 
-            title: "Identifier", 
+            title: "Id", 
             readonly: true
           },
           name: { 
@@ -52,12 +52,10 @@
             type: "string", 
             minLength: 2, 
             title: "Name", 
-            description: "Name or alias" 
           },
           organization: { 
             type: "string", 
             title: "Organization", 
-            description: "Identifier of Organization",
             select: { fromResource: '/organization', value: '_id', name: 'name' }
           }
         },
@@ -108,9 +106,10 @@
         }
       });
     });
+    
   });
-  
-  app.controller('indexController', function($scope, Models, $location, $route, $resource, $timeout, $routeParams, $log) {
+
+  app.controller('indexController', function($scope, Models, $location, $route, $resource, $timeout, $routeParams, $log, $q) {
     var index = this;
     
     index.currentModelValue = null;
@@ -125,9 +124,11 @@
           var model = getCurrentModel();
           var filter = {};
           filter[model.idField] = $routeParams.id;
-          index.currentModelValue = model.NgResource.get(filter, function() {}, function(res){
-            // redirect on any error, like not found and internal server error
-            index.path(index.path());
+          loadSelectsForModel(model).then(function() {
+            index.currentModelValue = model.NgResource.get(filter, function() {}, function(res){
+              // redirect on any error, like not found and internal server error
+              index.path(index.path());
+            });
           });
         }
       } else if (index.currentModelValue && !$routeParams.id) {
@@ -203,6 +204,8 @@
     });
         
     function loadSelectsForModel(model) {
+      
+      var promisesForSelects = [];
     
       // replace select items for titleMaps from ng resource
       for (var key in model.schema.properties) {
@@ -218,6 +221,8 @@
             });
           });
           
+          promisesForSelects.push(titleMap.$promise);
+          
           var i = model.form.indexOf(key);
           if (i < 0) {
             var formData = model.form.filter(function(f) { return f.key == key;})[0];
@@ -231,6 +236,8 @@
           }
         }
       }
+      
+      return $q.all(promisesForSelects);
     }
     
     index.save = function() {
@@ -280,46 +287,50 @@
       $timeout(function() {
         var model = getCurrentModel();
         if (model) {
-          loadSelectsForModel(model);
-          index.data = model.NgResource.query(function(list) {
-          
-            var formFieldsIdToValues = {};
-            model.form.forEach(function(field) {
-
-              if (field.titleMap) {
-                if (Array.isArray(field.titleMap)) {
-                  formFieldsIdToValues[field.key] = {};
-                  field.titleMap.forEach(function(v) {
-                    formFieldsIdToValues[field.key][v.value] = v.name;
-                  });
-                } else {
-                  formFieldsIdToValues[field.key] = field.titleMap;
-                }
-              }
-            });
+          loadSelectsForModel(model).then(function() {
+            index.data = model.NgResource.query(function(list) {
             
-            list.forEach(function(item) {
-              //console.log(item);
-              for (var key in item) {
-                //console.log(key);
-                if (key in formFieldsIdToValues) {
-                  var newValue = formFieldsIdToValues[key][item[key]];
-                  item[key] = newValue;
+              var formFieldsIdToValues = {};
+              model.form.forEach(function(field) {
+
+                if (field.titleMap) {
+                  
+                  if (Array.isArray(field.titleMap)) {
+                    formFieldsIdToValues[field.key] = {};
+                    field.titleMap.forEach(function(v) {
+                      formFieldsIdToValues[field.key][v.value] = v.name;
+                    });
+                  } else {
+                    formFieldsIdToValues[field.key] = field.titleMap;
+                  }
+
                 }
-              }
+              });
+              
+              list.forEach(function(item) {
+                //console.log(item);
+                for (var key in item) {
+                  //console.log(key);
+                  if (key in formFieldsIdToValues) {
+                    var newValue = formFieldsIdToValues[key][item[key]] || item[key];
+                    item[key] = newValue;
+                  }
+                }
+              });
+              
             });
+          
+            index.uiGrid.data = index.data;
+            
+            index.uiGrid.columnDefs = [];
+            for (var key in model.schema.properties) {
+              index.uiGrid.columnDefs.push({ 
+                name: key, 
+                displayName: model.schema.properties[key].title, 
+                enableCellEdit: true 
+              });
+            }
           });
-          
-          index.uiGrid.data = index.data;
-          
-          index.uiGrid.columnDefs = [];
-          for (var key in model.schema.properties) {
-            index.uiGrid.columnDefs.push({ 
-              name: key, 
-              displayName: model.schema.properties[key].title, 
-              enableCellEdit: true 
-            });
-          }
         }
         //$route.reload();
       });
