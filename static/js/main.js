@@ -85,26 +85,27 @@
     Models.forEach(function(model) {
       var idField = model.resourceUrl.split(':').pop();
       model.idField = idField;
-      var template = '<h1>'+model.title+'</h1>'
-          + '<form ng-if="index.getCurrentModelValue()" ng-submit="index.save()" sf-schema="index.models[\''+model.path+'\'].schema" sf-form="index.models[\''+model.path+'\'].form" sf-model="index.currentModelValue"></form>'
-          + '<div ng-if="!index.getCurrentModelValue()" class="btn-toolbar">'
+          
+      $routeProvider.when(model.path, {
+        template: '<h1>'+model.title+'</h1>'
+          + '<div class="btn-toolbar">'
           + '<button type="button" class="btn btn-success" ng-click="index.create()">New</button>'
           + '<button ng-if="index.canEdit()" type="button" class="btn btn-prmary" ng-click="index.edit()">Edit</button>'
           + '<button ng-if="index.canEdit()" type="button" class="btn btn-prmary" ng-click="index.remove()">Delete</button><br><br>'
           + '<div ui-grid="index.uiGrid" ui-grid-selection class="myGrid"></div>' 
-          + '</div>';
-          
-      $routeProvider.when(model.path, {
-        template: template
+          + '</div>'
       });
+      
       $routeProvider.when(model.path + '/:id', {
-        template: template,
-        resolve: {
-          id: function($routeParams) {
-            //console.log($routeParams.id);
-          }
-        }
+        template: '<h1>'+model.title+'</h1>'
+          + '<form ' 
+          + '  ng-submit="index.save()" ' 
+          + '  sf-schema="index.models[\''+model.path+'\'].schema" ' 
+          + '  sf-form="index.models[\''+model.path+'\'].form" ' 
+          + '  sf-model="index.getCurrentModelValue()">' 
+          + '</form>'
       });
+      
     });
     
   });
@@ -124,6 +125,7 @@
           var model = getCurrentModel();
           var filter = {};
           filter[model.idField] = $routeParams.id;
+          index.currentModelValue = {};
           loadSelectsForModel(model).then(function() {
             index.currentModelValue = model.NgResource.get(filter, function() {}, function(res){
               // redirect on any error, like not found and internal server error
@@ -326,8 +328,7 @@
             for (var key in model.schema.properties) {
               index.uiGrid.columnDefs.push({ 
                 name: key, 
-                displayName: model.schema.properties[key].title, 
-                enableCellEdit: true 
+                displayName: model.schema.properties[key].title
               });
             }
           });
