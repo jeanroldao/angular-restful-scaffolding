@@ -83,6 +83,10 @@ app.use('/api/v1', api);
 
 app.use(express.static('static'));
 
+app.get('*', function (req, res) {
+    res.sendFile(__dirname + '/static/index.html');
+});
+
 app.disable('etag');
 
 app.listen(3000);
