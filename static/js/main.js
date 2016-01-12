@@ -45,7 +45,7 @@
           _id: { 
             type: "string", 
             minLength: 24, 
-            title: "Identifier", 
+            title: "Id", 
             readonly: true
           },
           name: { 
@@ -88,7 +88,7 @@
           
       $routeProvider.when(model.path, {
         template: '<h1>'+model.title+'</h1>'
-          + '<div class="btn-toolbar">'
+          + '<div class="btn-toolbar" ng-init="index.init()">'
           + '<button type="button" class="btn btn-success" ng-click="index.create()">New</button>'
           + '<button ng-if="index.canEdit()" type="button" class="btn btn-prmary" ng-click="index.edit()">Edit</button>'
           + '<button ng-if="index.canEdit()" type="button" class="btn btn-prmary" ng-click="index.remove()">Delete</button><br><br>'
@@ -140,6 +140,7 @@
     };
     
     index.create = function() {
+      index.currentModelValue = null;
       index.path(index.path() + '/new');
     };
     
