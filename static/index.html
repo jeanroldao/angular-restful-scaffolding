@@ -62,7 +62,6 @@
           <a ng-repeat="m in index.models" 
             class="btn" 
             ng-class="{'btn-default': index.path() != m.path, 'btn-primary': index.path() == m.path}" 
-            ng-click="index.init()"
             ng-href="#{{m.path}}">{{m.title}}</a>
         </p>
       </div>

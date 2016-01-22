@@ -1,4 +1,5 @@
 var express = require('express');
+var status = require('http-status');
 var wagner = require('wagner-core');
 
 require('./models')(wagner);
@@ -82,6 +83,10 @@ app.use('/api/v1', api);
 
 
 app.use(express.static('static'));
+
+app.get('*', function (req, res) {
+    res.status(status.NOT_FOUND).json({ error: 'Not found' });
+});
 
 app.get('*', function (req, res) {
     res.sendFile(__dirname + '/static/index.html');
