@@ -98,7 +98,7 @@
       
       $routeProvider.when(model.path + '/:id', {
         template: '<h1>'+model.title+'</h1>'
-          + '<form ' 
+          + '<form ng-init="index.init()"' 
           + '  ng-submit="index.save()" ' 
           + '  sf-schema="index.models[\''+model.path+'\'].schema" ' 
           + '  sf-form="index.models[\''+model.path+'\'].form" ' 
